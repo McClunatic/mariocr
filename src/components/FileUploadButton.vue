@@ -16,7 +16,7 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
   setup() {
-    const logFiles = event => {
+    function logFiles(event: Event) {
       console.log(event.target.files)
     }
 
