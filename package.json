@@ -6,6 +6,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "tesseract.js": "^2.1.4",
     "vue": "^3.0.5"
   },
   "devDependencies": {
