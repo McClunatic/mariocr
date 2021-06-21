@@ -6,21 +6,26 @@
       type="file"
       multiple
       hidden
-      @change=logFiles
+      @change="recognizeFiles"
     >
   </label>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { recognize } from '../ocr'
 
 export default defineComponent({
   setup() {
-    function logFiles(event: Event) {
-      console.log(event.target.files)
+
+    function recognizeFiles(event: Event) {
+      if (event === null) return
+      const files = (<HTMLInputElement>event.target).files
+      if (files && files.length === 0) return
+      recognize(files![0]).then(result => console.log(result))
     }
 
-    return { logFiles }
+    return { recognizeFiles }
   },
 })
 </script>
