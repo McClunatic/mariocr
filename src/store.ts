@@ -1,6 +1,7 @@
 // store.ts
 import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
+import { createScheduler, createWorker } from 'tesseract.js'
 
 // define your typings for the store state
 export interface Status {
@@ -37,11 +38,30 @@ export const store = createStore<State>({
   mutations: {
     updateFiles(state, event: Event) {
       state.files = (<HTMLInputElement>event.target).files
+    },
+    updateResults(state, results: {[key: string]: Result}) {
+      state.results = results
     }
   },
   actions: {
     updateFiles({ commit }, event: Event) {
       commit('updateFiles', event)
+    },
+    async recognizeFiles({ state, commit }) {
+      const worker = createWorker({ logger: m => console.log(m) })
+
+      await worker.load()
+      await worker.loadLanguage('eng')
+      await worker.initialize('eng')
+
+      const resultsList = await Promise.all(
+        Array.from(state.files!)
+          .map(async (file) => ({[file.name]: await worker.recognize(file)}))
+      )
+      const results = Object.assign({}, ...resultsList)
+      commit('updateResults', results)
+
+      await worker.terminate()
     }
   }
 })
