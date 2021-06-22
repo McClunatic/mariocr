@@ -1,14 +1,17 @@
 <template>
-  <label>
-    Select Files
-    <input
-      id="files"
-      type="file"
-      multiple
-      hidden
-      @change="recognizeFiles"
-    >
-  </label>
+  <div class="file is-centered is-boxed">
+    <label class="file-label">
+      <input class="file-input" type="file" multiple @change="recognizeFiles">
+      <span class="file-cta">
+        <span class="file-icon">
+          <i class="fas fa-upload"></i>
+        </span>
+        <span class="file-label">
+          Choose files…
+        </span>
+      </span>
+    </label>
+  </div>
 </template>
 
 <script lang="ts">

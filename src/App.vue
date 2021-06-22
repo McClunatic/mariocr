@@ -27,6 +27,7 @@ export default defineComponent({
 
 <style lang="scss">
 @import 'bulma/css/bulma.min.css';
+@import '@fortawesome/fontawesome-free/css/all.min.css';
 
 html, body, #app {
   height: 100%;
