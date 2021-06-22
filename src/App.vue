@@ -1,19 +1,24 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
-  <file-upload-button />
+  <nav-bar />
+  <hero-banner />
+  <app-content />
+  <app-footer />
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import HelloWorld from './components/HelloWorld.vue'
-import FileUploadButton from './components/FileUploadButton.vue'
+import HeroBanner from './components/HeroBanner.vue'
+import NavBar from './components/NavBar.vue'
+import AppContent from './components/AppContent.vue'
+import AppFooter from './components/AppFooter.vue'
 
 export default defineComponent({
   name: 'App',
   components: {
-    HelloWorld,
-    FileUploadButton
+    HeroBanner,
+    NavBar,
+    AppContent,
+    AppFooter
   }
 })
 </script>
