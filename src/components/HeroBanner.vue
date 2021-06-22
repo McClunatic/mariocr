@@ -1,6 +1,10 @@
 <template>
-  <section>
-    <h1>MarioCR</h1>
-    <h2>Because plumbers are exceptional at optical character recognition.</h2>
+  <section class="hero is-info">
+    <div class="hero-body">
+      <p class="title">Super OCR</p>
+      <p class="subtitle">
+        Because plumbers are exceptional at optical character recognition.
+      </p>
+    </div>
   </section>
 </template>

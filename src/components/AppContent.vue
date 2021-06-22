@@ -1,5 +1,5 @@
 <template>
-  <section>
+  <section class="section is-large is-flex-grow-1 has-background-light">
     <file-upload-button />
   </section>
 </template>

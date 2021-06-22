@@ -1,8 +1,10 @@
 <template>
-  <nav-bar />
-  <hero-banner />
-  <app-content />
-  <app-footer />
+  <div class="page-content">
+    <nav-bar />
+    <hero-banner />
+    <app-content />
+    <app-footer />
+  </div>
 </template>
 
 <script lang="ts">
@@ -23,13 +25,16 @@ export default defineComponent({
 })
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style lang="scss">
+@import 'bulma/css/bulma.min.css';
+
+html, body, #app {
+  height: 100%;
+}
+
+#app > .page-content {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 </style>
