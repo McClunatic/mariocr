@@ -1,7 +1,7 @@
 // store.ts
 import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
-import { createScheduler, createWorker } from 'tesseract.js'
+import { createWorker } from 'tesseract.js'
 
 // define your typings for the store state
 export interface Status {
