@@ -1,10 +1,10 @@
 <template>
-  <div>
+  <div :hidden="visible ? null : true">
     <canvas
       v-for="page in pdfPages"
       :key="page"
       :ref="setCanvasRef"
-      :hidden="hidden ? true : null"
+      :hidden="visible ? null : true"
     />
   </div>
 </template>
@@ -19,9 +19,9 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 export default {
   props: {
     file: File,
-    hidden: {
+    visible: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
   setup(props) {
