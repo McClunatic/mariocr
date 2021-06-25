@@ -6,6 +6,7 @@
       class="box is-flex is-justify-content-space-between"
     >
       <span>{{ file.name }}</span>
+      <span class="tag is-info">{{ status(file.name) }}</span>
       <button class="delete" @click="removeFile(index)" />
     </li>
   </ul>
@@ -21,11 +22,15 @@ export default defineComponent({
     const store = useStore(key)
     const files = computed(() => store.state.files)
 
+    const status = (name: string): string => (
+      name.endsWith('.pdf') ? 'Pending' : 'Ready'
+    )
+
     const removeFile = (index: number) => {
       store.dispatch('removeFile', index)
     }
 
-    return { files, removeFile }
+    return { files, status, removeFile }
   },
 })
 </script>
