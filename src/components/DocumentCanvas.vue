@@ -1,6 +1,11 @@
 <template>
   <div>
-    <canvas v-for="page in pdfPages" :key="page" :ref="setCanvasRef" />
+    <canvas
+      v-for="page in pdfPages"
+      :key="page"
+      :ref="setCanvasRef"
+      :hidden="hidden ? true : null"
+    />
   </div>
 </template>
 
@@ -13,10 +18,14 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
 export default {
   props: {
-    file: File
+    file: File,
+    hidden: {
+      type: Boolean,
+      default: true
+    }
   },
   setup(props) {
-    const { file } = toRefs(props)
+    const { file, hidden } = toRefs(props)
     let pdfPages = ref([])
     let canvasRefs = []
 
@@ -72,7 +81,7 @@ export default {
     onMounted(renderPages)
     watch(file, renderPages)
 
-    return { pdfPages, setCanvasRef }
+    return { hidden, pdfPages, setCanvasRef }
   },
 }
 </script>
