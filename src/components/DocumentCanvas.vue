@@ -82,10 +82,10 @@ export default {
       }
 
       // TODO: emit to parent that the pdf pages are all rendered
-      store.dispatch(
-        'updateRenderPromises',
-        { [file.value.name]: Promise.all(renderedPages) }
-      )
+      const urlPromise = Promise.all(renderedPages).then(() => (
+        canvasRefs.map(canvas => canvas.toDataURL())
+      ))
+      store.dispatch('updateRenderPromises', { [file.value.name]: urlPromise })
     }
 
     onMounted(renderPages)

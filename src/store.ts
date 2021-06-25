@@ -8,7 +8,7 @@ export async function initializeScheduler() {
   const scheduler = createScheduler()
   const numThreads = Math.min(2, navigator.hardwareConcurrency / 2)
   for (let thread = 0; thread < numThreads; thread++) {
-    const worker = createWorker()
+    const worker = createWorker({logger: m => console.log(m)})
     await worker.load()
     await worker.loadLanguage('eng')
     await worker.initialize('eng')
@@ -36,7 +36,7 @@ export interface Status {
 export interface State {
   files: Array<File>
   statuses: {[key: string]: Status}
-  promises: {[key: string]: Promise<void>}
+  promises: {[key: string]: Promise<Array<string>>}
   results: {[key: string]: Result}
 }
 
@@ -51,6 +51,9 @@ export const store = createStore<State>({
     results: {}
   },
   getters: {
+    imgFiles(state) {
+      return state.files.filter(f => !f.name.endsWith('.pdf'))
+    },
     pdfFiles(state) {
       return state.files.filter(f => f.name.endsWith('.pdf'))
     }
@@ -72,7 +75,7 @@ export const store = createStore<State>({
         }
       }
     },
-    updateRenderPromises(state, promises: {[key: string]: Promise<void>}) {
+    updateRenderPromises(state, promises: {[key: string]: Promise<Array<string>>}) {
       for (const [key, value] of Object.entries(promises)) {
         state.promises[key] = value
       }
@@ -96,7 +99,7 @@ export const store = createStore<State>({
     updateStatuses({ commit }, statuses: {[key: string]: Status}) {
       commit('updateStatuses', statuses)
     },
-    updateRenderPromises({ commit }, promises: {[key: string]: Promise<void>}) {
+    updateRenderPromises({ commit }, promises: {[key: string]: Promise<Array<string>>}) {
       commit('updateRenderPromises', promises)
     },
     updateFiles({ state, commit }, event: Event) {
@@ -108,7 +111,7 @@ export const store = createStore<State>({
         commit('updateStatuses', { [file.name]: { pages: 1, rendered } })
       }
     },
-    async recognizeFiles({ state, commit }) {
+    async recognizeFiles({ state, getters, commit }) {
       // Start scheduler and workers
       const scheduler = await initializeScheduler()
 
@@ -116,26 +119,36 @@ export const store = createStore<State>({
       const pdfs = state.files.filter(file => file.name.endsWith('.pdf'))
       const imgs = state.files.filter(file => !file.name.endsWith('.pdf'))
 
-      // Signal to document canvases to send data URLs for PDFs
-      // TODO
-
       // Dispatch OCR jobs for non-PDFs
-      const imgJobs: Promise<void[]> = Promise.all(state.files.map(file => (
-        scheduler.addJob('recognize', file).then((result): void => (
-          commit('updateResults', { [file.name]: result.data }))
-      ))))
+      const imgJobs: Promise<void[]> = Promise.all(getters.imgFiles.map(
+        (file: File) => (
+          scheduler.addJob('recognize', file).then((result): void => (
+            commit('updateResults', { [file.name]: result.data }))
+          )
+        )
+      ))
 
       // Dispatch OCR jobs for PDFs upon hearing events from canvases
-      // TODO
+      const allJobs: Array<Promise<void | void[]>> = [imgJobs]
+      for (const [name, prom] of Object.entries(state.promises)) {
+        const dataUrls = await prom
+        console.log('dataUrls', dataUrls)
+        // Address fact that recognize cannot take an array of URLs :(
+        allJobs.push(
+          scheduler.addJob('recognize', dataUrls[0]).then((result): void => (
+            commit('updateResults', { [name]: result.data }))
+          )
+        )
+      }
 
       // Await the completion of all jobs
-      await imgJobs
+      await allJobs
 
       // TODO provide download options for results
       console.log(state.results)
 
       // Terminate scheduler
-      await scheduler.terminate()
+      // await scheduler.terminate()
     }
   }
 })
