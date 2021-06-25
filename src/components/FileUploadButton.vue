@@ -1,6 +1,7 @@
 <template>
   <div class="file is-centered is-boxed">
     <label class="file-label">
+      <!-- TODO: limit accepted file input types -->
       <input
         @change="updateFiles"
         class="file-input"
