@@ -12,6 +12,7 @@
       <button
         class="button control is-primary"
         :class="{ 'is-hidden': !files.length }"
+        @click="recognizeFiles"
       >
         OCR
       </button>
@@ -52,9 +53,10 @@ export default defineComponent({
     const files = computed(() => store.state.files)
     const pdfFiles = computed(() => store.getters.pdfFiles)
 
+    const recognizeFiles = () => store.dispatch('recognizeFiles')
     const clearFiles = () => store.dispatch('clearFiles')
 
-    return { files, pdfFiles, clearFiles }
+    return { files, pdfFiles, recognizeFiles, clearFiles }
   }
 })
 </script>
