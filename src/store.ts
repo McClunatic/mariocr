@@ -29,7 +29,6 @@ export interface Word {
   bbox: {[key: string]: number},
 }
 export interface Result {
-  jobId: string,
   confidence: number,
   text: string,
   words: Array<Word>
@@ -66,7 +65,9 @@ export const store = createStore<State>({
       state.files = Array.from((<HTMLInputElement>event.target).files || [])
     },
     updateResults(state, results: {[key: string]: Result}) {
-      state.results = results
+      for (const [key, value] of Object.entries(results)) {
+        state.results[key] = value
+      }
     }
   },
   actions: {
@@ -92,16 +93,16 @@ export const store = createStore<State>({
       // TODO
 
       // Dispatch OCR jobs for non-PDFs
-      const imgJobs = Promise.all(state.files.map(file => (
-        scheduler.addJob('recognize', file)
-      )))
+      const imgJobs: Promise<void[]> = Promise.all(state.files.map(file => (
+        scheduler.addJob('recognize', file).then((result): void => (
+          commit('updateResults', { [file.name]: result.data }))
+      ))))
 
       // Dispatch OCR jobs for PDFs upon hearing events from canvases
       // TODO
 
-      // Consolidate and commit results
-      const results = await imgJobs
-      commit('updateResults', results)
+      // Await the completion of all jobs
+      await imgJobs
 
       // TODO provide download options for results
       console.log(state.results)
