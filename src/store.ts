@@ -21,7 +21,7 @@ export interface Result {
 }
 
 export interface State {
-  files: FileList | null,
+  files: Array<File>
   statuses: {[key: string]: Status}
   results: {[key: string]: Result}
 }
@@ -31,23 +31,18 @@ export const key: InjectionKey<Store<State>> = Symbol()
 
 export const store = createStore<State>({
   state: {
-    files: null,
+    files: [],
     statuses: {},
-    results: {} 
+    results: {}
   },
   getters: {
-    allFiles(state) {
-      if (state.files === null) return []
-      else return Array.from(state.files)
-    },
     pdfFiles(state) {
-      if (state.files === null) return []
-      else return Array.from(state.files).filter(f => f.name.endsWith('.pdf'))
+      return state.files.filter(f => f.name.endsWith('.pdf'))
     }
   },
   mutations: {
     updateFiles(state, event: Event) {
-      state.files = (<HTMLInputElement>event.target).files
+      state.files = Array.from((<HTMLInputElement>event.target).files || [])
     },
     updateResults(state, results: {[key: string]: Result}) {
       state.results = results
@@ -65,7 +60,7 @@ export const store = createStore<State>({
       await worker.initialize('eng')
 
       const resultsList = await Promise.all(
-        Array.from(state.files!)
+        state.files
           .map(async (file) => ({[file.name]: await worker.recognize(file)}))
       )
       const results = Object.assign({}, ...resultsList)
