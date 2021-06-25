@@ -9,7 +9,6 @@
 
 <script>
 import { defineComponent, onMounted, ref } from 'vue'
-import { createWorker } from 'tesseract.js/dist/tesseract.min.js'
 import FileUploadButton from './FileUploadButton.vue'
 import FilesList from './FilesList.vue'
 import DocumentCanvas from './DocumentCanvas.vue'
