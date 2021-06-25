@@ -2,13 +2,18 @@
   <section class="section is-large is-flex-grow-1 has-background-light">
     <file-upload-button class="mb-4" />
     <files-list />
-    <input type="file" multiple @change="testpdf">
-    <document-canvas v-if="pdfFile" :file="pdfFile" />
+    <document-canvas
+      v-for="pdfFile in pdfFiles"
+      :key="pdfFile.name"
+      :file="pdfFile"
+    />
   </section>
 </template>
 
 <script>
-import { defineComponent, onMounted, ref } from 'vue'
+import { computed, defineComponent } from 'vue'
+import { useStore } from 'vuex'
+import { key } from '../store'
 import FileUploadButton from './FileUploadButton.vue'
 import FilesList from './FilesList.vue'
 import DocumentCanvas from './DocumentCanvas.vue'
@@ -20,13 +25,10 @@ export default defineComponent({
     DocumentCanvas
   },
   setup() {
-    const pdfFile = ref(null)
+    const store = useStore(key)
+    const pdfFiles = computed(() => store.getters.pdfFiles)
 
-    async function testpdf(event) {
-      pdfFile.value = event.target.files[0]
-    }
-
-    return { pdfFile, testpdf }
-  },
+    return { pdfFiles }
+  }
 })
 </script>
