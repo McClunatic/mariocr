@@ -82,7 +82,6 @@ export const store = createStore<State>({
     },
     async recognizeFiles({ state, commit }) {
       // Start scheduler and workers
-      // TODO add logger function to workers
       const scheduler = await initializeScheduler()
 
       // Filter files into two lists: PDFs and non-PDFs
