@@ -35,6 +35,12 @@ export const store = createStore<State>({
     statuses: {},
     results: {} 
   },
+  getters: {
+    pdfFiles(state) {
+      if (state.files === null) return null
+      else return Array.from(state.files).filter(f => f.name.endsWith('.pdf'))
+    }
+  },
   mutations: {
     updateFiles(state, event: Event) {
       state.files = (<HTMLInputElement>event.target).files
