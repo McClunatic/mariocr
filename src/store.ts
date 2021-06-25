@@ -1,7 +1,21 @@
 // store.ts
 import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
-import { createWorker } from 'tesseract.js'
+import { createWorker, createScheduler } from 'tesseract.js'
+
+// define scheduler helper function
+export async function initializeScheduler() {
+  const scheduler = createScheduler()
+  const numThreads = Math.min(2, navigator.hardwareConcurrency / 2)
+  for (let thread = 0; thread < numThreads; thread++) {
+    const worker = createWorker()
+    await worker.load()
+    await worker.loadLanguage('eng')
+    await worker.initialize('eng')
+    scheduler.addWorker(worker)
+  }
+  return scheduler
+}
 
 // define your typings for the store state
 export interface Status {
@@ -16,6 +30,7 @@ export interface Word {
 }
 export interface Result {
   jobId: string,
+  confidence: number,
   text: string,
   words: Array<Word>
 }
@@ -65,20 +80,34 @@ export const store = createStore<State>({
       commit('updateFiles', event)
     },
     async recognizeFiles({ state, commit }) {
-      const worker = createWorker({ logger: m => console.log(m) })
+      // Start scheduler and workers
+      // TODO add logger function to workers
+      const scheduler = await initializeScheduler()
 
-      await worker.load()
-      await worker.loadLanguage('eng')
-      await worker.initialize('eng')
+      // Filter files into two lists: PDFs and non-PDFs
+      const pdfs = state.files.filter(file => file.name.endsWith('.pdf'))
+      const imgs = state.files.filter(file => !file.name.endsWith('.pdf'))
 
-      const resultsList = await Promise.all(
-        state.files
-          .map(async (file) => ({[file.name]: await worker.recognize(file)}))
-      )
-      const results = Object.assign({}, ...resultsList)
+      // Signal to document canvases to send data URLs for PDFs
+      // TODO
+
+      // Dispatch OCR jobs for non-PDFs
+      const imgJobs = Promise.all(state.files.map(file => (
+        scheduler.addJob('recognize', file)
+      )))
+
+      // Dispatch OCR jobs for PDFs upon hearing events from canvases
+      // TODO
+
+      // Consolidate and commit results
+      const results = await imgJobs
       commit('updateResults', results)
 
-      await worker.terminate()
+      // TODO provide download options for results
+      console.log(state.results)
+
+      // Terminate scheduler
+      await scheduler.terminate()
     }
   }
 })
