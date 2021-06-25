@@ -11,6 +11,8 @@
 
 <script>
 import { nextTick, onBeforeUpdate, onMounted, ref, toRefs, watch } from 'vue'
+import { useStore } from 'vuex'
+import { key } from '../store'
 import * as pdfjsLib from 'pdfjs-dist'
 import * as pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry'
 
@@ -26,6 +28,7 @@ export default {
   },
   setup(props) {
     const { file, hidden } = toRefs(props)
+    const store = useStore(key)
     let pdfPages = ref([])
     let canvasRefs = []
 
@@ -70,7 +73,12 @@ export default {
         canvas.width = viewport.width
 
         const renderOptions = { canvasContext: context, viewport: viewport }
-        renderedPages.push(page.render(renderOptions).promise)
+        renderedPages.push(page.render(renderOptions).promise.then(() => (
+          store.dispatch('updateStatuses', { [file.value.name]: {
+            pages: document.numPages,
+            rendered: 1
+          }})
+        )))
       }
 
       // TODO: emit to parent that the pdf pages are all rendered

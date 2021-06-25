@@ -6,7 +6,7 @@
       class="box is-flex is-justify-content-space-between"
     >
       <span>{{ file.name }}</span>
-      <span class="tag is-info">{{ status(file.name) }}</span>
+      <span class="tag is-info">{{ fileStatus(file.name) }}</span>
       <button class="delete" @click="removeFile(index)" />
     </li>
   </ul>
@@ -21,16 +21,19 @@ export default defineComponent({
   setup() {
     const store = useStore(key)
     const files = computed(() => store.state.files)
+    const statuses = computed(() => store.state.statuses)
 
-    const status = (name: string): string => (
-      name.endsWith('.pdf') ? 'Pending' : 'Ready'
-    )
+    const fileStatus = (filename: string): string => {
+      const status = statuses.value[filename]
+      if (status.rendered === status.pages) return 'Ready'
+      else return `Rendering (${status.rendered / status.pages}%)`
+    }
 
     const removeFile = (index: number) => {
       store.dispatch('removeFile', index)
     }
 
-    return { files, status, removeFile }
+    return { files, fileStatus, removeFile }
   },
 })
 </script>

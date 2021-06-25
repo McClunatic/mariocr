@@ -18,12 +18,6 @@ export async function initializeScheduler() {
 }
 
 // define your typings for the store state
-export interface Status {
-  jobId: string,
-  status: string,
-  progress: number
-}
-
 export interface Word {
   baseline: {[key: string]: number | string},
   bbox: {[key: string]: number},
@@ -32,6 +26,11 @@ export interface Result {
   confidence: number,
   text: string,
   words: Array<Word>
+}
+
+export interface Status {
+  rendered: number,
+  pages: number
 }
 
 export interface State {
@@ -61,6 +60,16 @@ export const store = createStore<State>({
     clearFiles(state) {
       state.files = []
     },
+    updateStatuses(state, statuses: {[key: string]: Status}) {
+      for (const [key, value] of Object.entries(statuses)) {
+        if (key in state.statuses) {
+          state.statuses[key].rendered += value.rendered
+          state.statuses[key].pages = value.pages
+        } else {
+          state.statuses[key] = value
+        }
+      }
+    },
     updateFiles(state, event: Event) {
       state.files = Array.from((<HTMLInputElement>event.target).files || [])
     },
@@ -77,8 +86,17 @@ export const store = createStore<State>({
     clearFiles({ commit }) {
       commit('clearFiles')
     },
-    updateFiles({ commit }, event: Event) {
+    updateStatuses({ commit }, statuses: {[key: string]: Status}) {
+      commit('updateStatuses', statuses)
+    },
+    updateFiles({ state, commit }, event: Event) {
       commit('updateFiles', event)
+
+      // Set initial statuses for PDF and non-PDF files
+      for (const file of state.files) {
+        const rendered = file.name.endsWith('.pdf') ? 0 : 1
+        commit('updateStatuses', { [file.name]: { pages: 1, rendered } })
+      }
     },
     async recognizeFiles({ state, commit }) {
       // Start scheduler and workers

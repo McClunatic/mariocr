@@ -18,7 +18,7 @@
       </button>
       <button
         class="button control is-outlined"
-        :class="{ 'is-hidden': !files.length }"
+        :class="{ 'is-hidden': !files.length, 'is-active': isActive }"
         @click="clearFiles"
       >
         <span class="icon">
@@ -34,7 +34,7 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
 import { computed, defineComponent } from 'vue'
 import { useStore } from 'vuex'
 import { key } from '../store'
@@ -52,11 +52,17 @@ export default defineComponent({
     const store = useStore(key)
     const files = computed(() => store.state.files)
     const pdfFiles = computed(() => store.getters.pdfFiles)
+    const isActive = computed(() => {
+      for ( const [key, value] of Object.entries(store.state.statuses)) {
+        if (value.rendered < value.pages) return false
+      }
+      return true
+    })
 
     const recognizeFiles = () => store.dispatch('recognizeFiles')
     const clearFiles = () => store.dispatch('clearFiles')
 
-    return { files, pdfFiles, recognizeFiles, clearFiles }
+    return { files, pdfFiles, isActive, recognizeFiles, clearFiles }
   }
 })
 </script>
