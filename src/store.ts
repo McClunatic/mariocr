@@ -36,8 +36,12 @@ export const store = createStore<State>({
     results: {} 
   },
   getters: {
+    allFiles(state) {
+      if (state.files === null) return []
+      else return Array.from(state.files)
+    },
     pdfFiles(state) {
-      if (state.files === null) return null
+      if (state.files === null) return []
       else return Array.from(state.files).filter(f => f.name.endsWith('.pdf'))
     }
   },
