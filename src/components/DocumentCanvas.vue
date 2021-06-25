@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { onBeforeUpdate, onMounted, ref, watch } from 'vue'
+import { onBeforeUpdate, onMounted, ref, toRefs, watch } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
 import * as pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry'
 
@@ -15,9 +15,9 @@ export default {
   props: {
     file: File
   },
-  setup({ file }) {
+  setup(props) {
+    const { file } = toRefs(props)
     let pdfPages = ref([])
-
     let canvasRefs = []
 
     const setCanvasRef = (el) => {
@@ -41,8 +41,8 @@ export default {
 
     async function renderPages() {
       pdfPages.value = []
-      const document = await getDocument(file)
-      for (let pageNum = 1; pageNum < document.numPages; pageNum++) {
+      const document = await getDocument(file.value)
+      for (let pageNum = 1; pageNum <= document.numPages; pageNum++) {
         const page = await document.getPage(pageNum)
         pdfPages.value.push(page)
 
@@ -65,9 +65,7 @@ export default {
     }
 
     onMounted(renderPages)
-
-    // TODO: figure out why this isn't firing when the pdfFile updates in parent
-    watch(() => file, renderPages)
+    watch(file, renderPages)
 
     return { pdfPages, setCanvasRef }
   },
