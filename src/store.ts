@@ -36,6 +36,7 @@ export interface Status {
 export interface State {
   files: Array<File>
   statuses: {[key: string]: Status}
+  promises: {[key: string]: Promise<void>}
   results: {[key: string]: Result}
 }
 
@@ -46,6 +47,7 @@ export const store = createStore<State>({
   state: {
     files: [],
     statuses: {},
+    promises: {},
     results: {}
   },
   getters: {
@@ -70,6 +72,11 @@ export const store = createStore<State>({
         }
       }
     },
+    updateRenderPromises(state, promises: {[key: string]: Promise<void>}) {
+      for (const [key, value] of Object.entries(promises)) {
+        state.promises[key] = value
+      }
+    },
     updateFiles(state, event: Event) {
       state.files = Array.from((<HTMLInputElement>event.target).files || [])
     },
@@ -88,6 +95,9 @@ export const store = createStore<State>({
     },
     updateStatuses({ commit }, statuses: {[key: string]: Status}) {
       commit('updateStatuses', statuses)
+    },
+    updateRenderPromises({ commit }, promises: {[key: string]: Promise<void>}) {
+      commit('updateRenderPromises', promises)
     },
     updateFiles({ state, commit }, event: Event) {
       commit('updateFiles', event)

@@ -82,8 +82,10 @@ export default {
       }
 
       // TODO: emit to parent that the pdf pages are all rendered
-      await Promise.all(renderedPages)
-      console.log(`Finished rendering ${document.numPages} page(s) of ${file.value.name}`)
+      store.dispatch(
+        'updateRenderPromises',
+        { [file.value.name]: Promise.all(renderedPages) }
+      )
     }
 
     onMounted(renderPages)
