@@ -1,5 +1,5 @@
 <template>
-  <div class="file is-centered is-boxed">
+  <div class="file">
     <label class="file-label">
       <!-- TODO: limit accepted file input types -->
       <input

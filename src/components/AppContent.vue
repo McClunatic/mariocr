@@ -1,7 +1,21 @@
 <template>
   <section class="section is-large is-flex-grow-1 has-background-light">
-    <file-upload-button class="mb-4" />
     <files-list />
+    <div
+      class="field is-flex is-justify-content-center"
+      :class="{ 'is-grouped': files !== null }"
+    >
+      <file-upload-button
+        class="mb-4 control is-dark"
+        :class="{ 'is-centered': files === null, 'is-boxed': files === null }"
+      />
+      <button
+        class="button control is-primary"
+        :class="{ 'is-hidden': files === null }"
+      >
+        OCR
+      </button>
+    </div>
     <document-canvas
       v-for="pdfFile in pdfFiles"
       :key="pdfFile.name"
@@ -26,9 +40,10 @@ export default defineComponent({
   },
   setup() {
     const store = useStore(key)
+    const files = computed(() => store.state.files)
     const pdfFiles = computed(() => store.getters.pdfFiles)
 
-    return { pdfFiles }
+    return { files, pdfFiles }
   }
 })
 </script>
