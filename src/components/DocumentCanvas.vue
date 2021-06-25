@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { onBeforeUpdate, onMounted, ref, toRefs, watch } from 'vue'
+import { nextTick, onBeforeUpdate, onMounted, ref, toRefs, watch } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
 import * as pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry'
 
@@ -42,26 +42,31 @@ export default {
     async function renderPages() {
       pdfPages.value = []
       const document = await getDocument(file.value)
+
       for (let pageNum = 1; pageNum <= document.numPages; pageNum++) {
-        const page = await document.getPage(pageNum)
-        pdfPages.value.push(page)
+        pdfPages.value.push(document.getPage(pageNum))
+      }
 
+      // Wait for canvases to be created and page proxies to resolve
+      await nextTick()
+      const pages = await Promise.all(pdfPages.value)
+
+      const renderedPages = []
+      for (let index = 0; index < document.numPages; index++) {
+        const page = pages[index]
         const viewport = page.getViewport({ scale: 1.5 })
-
-        // Wait for canvas to be created
-        while (canvasRefs.length < pageNum) {
-          await new Promise(r => setTimeout(r, 100));
-        }
-        const canvas = canvasRefs[pageNum - 1]
+        const canvas = canvasRefs[index]
         const context = canvas.getContext('2d')
         canvas.height = viewport.height
         canvas.width = viewport.width
 
         const renderOptions = { canvasContext: context, viewport: viewport }
-        await page.render(renderOptions).promise
+        renderedPages.push(page.render(renderOptions).promise)
       }
+
       // TODO: emit to parent that the pdf pages are all rendered
-      console.log(`Finished rendering ${document.numPages} page(s) of ${file.name}`)
+      await Promise.all(renderedPages)
+      console.log(`Finished rendering ${document.numPages} page(s) of ${file.value.name}`)
     }
 
     onMounted(renderPages)
