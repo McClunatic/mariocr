@@ -1,7 +1,12 @@
 <template>
   <ul class="content">
-    <li class="box" v-for="file in files" :key="file.name">
-      {{ file.name }}
+    <li
+      v-for="(file, index) in files"
+      :key="file.name"
+      class="box is-flex is-justify-content-space-between"
+    >
+      <span>{{ file.name }}</span>
+      <button class="delete" @click="removeFile(index)" />
     </li>
   </ul>
 </template>
@@ -14,11 +19,13 @@ import { key } from '../store'
 export default defineComponent({
   setup() {
     const store = useStore(key)
-    const files = computed(
-      () => store.state.files ? Array.from(store.state.files) : []
-    )
+    const files = computed(() => store.state.files)
 
-    return { files }
+    const removeFile = (index: number) => {
+      store.dispatch('removeFile', index)
+    }
+
+    return { files, removeFile }
   },
 })
 </script>

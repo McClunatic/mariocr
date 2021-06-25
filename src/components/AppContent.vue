@@ -3,17 +3,26 @@
     <files-list />
     <div
       class="field is-flex is-justify-content-center"
-      :class="{ 'is-grouped': files !== null }"
+      :class="{ 'is-grouped': files.length }"
     >
       <file-upload-button
         class="mb-4 control is-dark"
-        :class="{ 'is-centered': files === null, 'is-boxed': files === null }"
+        :class="{ 'is-centered': !files.length, 'is-boxed': !files.length }"
       />
       <button
         class="button control is-primary"
-        :class="{ 'is-hidden': files === null }"
+        :class="{ 'is-hidden': !files.length }"
       >
         OCR
+      </button>
+      <button
+        class="button control is-outlined"
+        :class="{ 'is-hidden': !files.length }"
+        @click="clearFiles"
+      >
+        <span class="icon">
+          <i class="fas fa-undo" />
+        </span>
       </button>
     </div>
     <document-canvas
@@ -43,7 +52,9 @@ export default defineComponent({
     const files = computed(() => store.state.files)
     const pdfFiles = computed(() => store.getters.pdfFiles)
 
-    return { files, pdfFiles }
+    const clearFiles = () => store.dispatch('clearFiles')
+
+    return { files, pdfFiles, clearFiles }
   }
 })
 </script>

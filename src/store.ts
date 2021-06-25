@@ -41,6 +41,12 @@ export const store = createStore<State>({
     }
   },
   mutations: {
+    removeFile(state, index: number) {
+      state.files.splice(index, 1)
+    },
+    clearFiles(state) {
+      state.files = []
+    },
     updateFiles(state, event: Event) {
       state.files = Array.from((<HTMLInputElement>event.target).files || [])
     },
@@ -49,6 +55,12 @@ export const store = createStore<State>({
     }
   },
   actions: {
+    removeFile({ commit }, index: number) {
+      commit('removeFile', index)
+    },
+    clearFiles({ commit }) {
+      commit('clearFiles')
+    },
     updateFiles({ commit }, event: Event) {
       commit('updateFiles', event)
     },
