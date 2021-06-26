@@ -52,6 +52,7 @@ export default {
     }
 
     async function renderPages() {
+      store.dispatch('removePromise', file.value.name)
       pdfPages.value = []
       const document = await getDocument(file.value)
 

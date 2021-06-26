@@ -98,17 +98,17 @@ export const store = createStore<State>({
         state.promises[key] = value
       }
     },
+    removePromise(state, key: string) {
+      if (key in state.promises) delete state.promises[key]
+    },
     updateFiles(state, event: Event) {
       state.files = Array.from((<HTMLInputElement>event.target).files || [])
     },
-    updateResults(state, results: {[key: string]: Result}) {
-      for (const [key, value] of Object.entries(results)) {
-        if (key in state.results) {
-          state.results[key].push(value)
-        } else {
-          state.results[key] = [value]
-        }
+    updateResults(state, payload: {key: string, idx: number, result: Result}) {
+      if (!(payload.key in state.results)) {
+        state.results[payload.key] = []
       }
+      state.results[payload.key][payload.idx] = payload.result
     },
     clearResults(state) {
       state.results = {}
@@ -126,6 +126,9 @@ export const store = createStore<State>({
     },
     updateRenderPromises({ commit }, promises: {[key: string]: Promise<Array<string>>}) {
       commit('updateRenderPromises', promises)
+    },
+    removePromise({ commit }, key: string) {
+      commit('removePromise', key)
     },
     updateFiles({ state, commit }, event: Event) {
       // Clear prior statuses
@@ -154,18 +157,26 @@ export const store = createStore<State>({
       const imgJobs: Promise<void[]> = Promise.all(getters.imgFiles.map(
         (file: File) => (
           scheduler.addJob('recognize', file).then((result): void => (
-            commit('updateResults', { [file.name]: result.data }))
+            commit('updateResults', {
+              key: file.name,
+              idx: 0,
+              result: result.data
+            }))
           )
         )
       ))
 
-      // Dispatch OCR jobs for PDFs upon hearing events from canvases
+      // Dispatch OCR jobs for PDFs upon resolving data URL promises
       const allJobs: Array<Promise<void | void[]>> = [imgJobs]
       for (const [name, prom] of Object.entries(state.promises)) {
 
-        const pageJobs = (await prom).map((url, index) => (
+        const pageJobs = (await prom).map((url, idx) => (
           scheduler.addJob('recognize', url).then((result): void => (
-            commit('updateResults', { [name]: result.data }))
+            commit('updateResults', {
+              key: name,
+              idx: idx,
+              result: result.data
+            }))
           )
         ))
         allJobs.push(Promise.all(pageJobs))
