@@ -60,20 +60,38 @@ export const store = createStore<State>({
   },
   mutations: {
     removeFile(state, index: number) {
+      // Remove the file from the files array
+      const name = state.files[index].name
       state.files.splice(index, 1)
+
+      // Delete other store data associated with the file
+      if (name in state.statuses) delete state.statuses[name]
+      if (name in state.promises) delete state.promises[name]
+      if (name in state.results) delete state.results[name]
     },
     clearFiles(state) {
+      // Clear files
       state.files = []
+
+      // Clear other store data
+      state.statuses = {}
+      state.promises = {}
+      state.results = {}
     },
     updateStatuses(state, statuses: {[key: string]: Status}) {
       for (const [key, value] of Object.entries(statuses)) {
+        // For keys already in status, assume multipage and increment progress
         if (key in state.statuses) {
           state.statuses[key].rendered += value.rendered
           state.statuses[key].pages = value.pages
+        // Otherwise, assume single page and just set value
         } else {
           state.statuses[key] = value
         }
       }
+    },
+    clearStatuses(state) {
+      state.statuses = {}
     },
     updateRenderPromises(state, promises: {[key: string]: Promise<Array<string>>}) {
       for (const [key, value] of Object.entries(promises)) {
@@ -91,6 +109,9 @@ export const store = createStore<State>({
           state.results[key] = [value]
         }
       }
+    },
+    clearResults(state) {
+      state.results = {}
     }
   },
   actions: {
@@ -107,6 +128,9 @@ export const store = createStore<State>({
       commit('updateRenderPromises', promises)
     },
     updateFiles({ state, commit }, event: Event) {
+      // Clear prior statuses
+      commit('clearStatuses')
+
       commit('updateFiles', event)
 
       // Set initial statuses for PDF and non-PDF files
@@ -116,6 +140,9 @@ export const store = createStore<State>({
       }
     },
     async recognizeFiles({ state, getters, commit }) {
+      // Clear prior results
+      commit('clearResults')
+
       // Start scheduler and workers
       const scheduler = await initializeScheduler()
 
