@@ -37,7 +37,7 @@ export interface State {
   files: Array<File>
   statuses: {[key: string]: Status}
   promises: {[key: string]: Promise<Array<string>>}
-  results: {[key: string]: Result}
+  results: {[key: string]: Array<Result>}
 }
 
 // define injection key
@@ -85,7 +85,11 @@ export const store = createStore<State>({
     },
     updateResults(state, results: {[key: string]: Result}) {
       for (const [key, value] of Object.entries(results)) {
-        state.results[key] = value
+        if (key in state.results) {
+          state.results[key].push(value)
+        } else {
+          state.results[key] = [value]
+        }
       }
     }
   },
@@ -131,24 +135,23 @@ export const store = createStore<State>({
       // Dispatch OCR jobs for PDFs upon hearing events from canvases
       const allJobs: Array<Promise<void | void[]>> = [imgJobs]
       for (const [name, prom] of Object.entries(state.promises)) {
-        const dataUrls = await prom
-        console.log('dataUrls', dataUrls)
-        // TODO Address fact that recognize cannot take an array of URLs :(
-        allJobs.push(
-          scheduler.addJob('recognize', dataUrls[0]).then((result): void => (
+
+        const pageJobs = (await prom).map((url, index) => (
+          scheduler.addJob('recognize', url).then((result): void => (
             commit('updateResults', { [name]: result.data }))
           )
-        )
+        ))
+        allJobs.push(Promise.all(pageJobs))
       }
 
       // Await the completion of all jobs
-      await allJobs
+      await Promise.all(allJobs)
 
       // TODO provide download options for results
       console.log(state.results)
 
       // Terminate scheduler
-      // await scheduler.terminate()
+      await scheduler.terminate()
     }
   }
 })
