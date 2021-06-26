@@ -26,7 +26,7 @@ export default defineComponent({
     const fileStatus = (filename: string): string => {
       const status = statuses.value[filename]
       if (status.rendered === status.pages) return 'Ready'
-      else return `Rendering (${status.rendered / status.pages}%)`
+      else return `Rendering (${100 * status.rendered / status.pages}%)`
     }
 
     const removeFile = (index: number) => {
