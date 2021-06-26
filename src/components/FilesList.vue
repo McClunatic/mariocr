@@ -3,11 +3,15 @@
     <li
       v-for="(file, index) in files"
       :key="file.name"
-      class="box is-flex is-justify-content-space-between"
+      class="box columns"
     >
-      <span>{{ file.name }}</span>
-      <span class="tag is-info">{{ fileStatus(file.name) }}</span>
-      <button class="delete" @click="removeFile(index)" />
+      <span class="column is-6">{{ file.name }}</span>
+      <div class="column is-5">
+        <span class="tag is-info">{{ fileStatus(file.name) }}</span>
+      </div>
+      <div class="column is-1 is-flex is-justify-content-flex-end">
+        <button class="delete" @click="removeFile(index)" />
+      </div>
     </li>
   </ul>
 </template>
