@@ -133,7 +133,7 @@ export const store = createStore<State>({
       for (const [name, prom] of Object.entries(state.promises)) {
         const dataUrls = await prom
         console.log('dataUrls', dataUrls)
-        // Address fact that recognize cannot take an array of URLs :(
+        // TODO Address fact that recognize cannot take an array of URLs :(
         allJobs.push(
           scheduler.addJob('recognize', dataUrls[0]).then((result): void => (
             commit('updateResults', { [name]: result.data }))

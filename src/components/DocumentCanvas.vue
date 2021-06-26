@@ -81,7 +81,6 @@ export default {
         )))
       }
 
-      // TODO: emit to parent that the pdf pages are all rendered
       const urlPromise = Promise.all(renderedPages).then(() => (
         canvasRefs.map(canvas => canvas.toDataURL())
       ))
