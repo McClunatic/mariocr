@@ -66,7 +66,7 @@ export default {
       const renderedPages = []
       for (let index = 0; index < document.numPages; index++) {
         const page = pages[index]
-        const viewport = page.getViewport({ scale: 1.5 })
+        const viewport = page.getViewport({ scale: 2 })
         const canvas = canvasRefs[index]
         const context = canvas.getContext('2d')
         canvas.height = viewport.height
