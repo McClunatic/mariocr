@@ -8,7 +8,7 @@
       <span class="column is-6">{{ file.name }}</span>
       <div class="column is-5">
         <a
-          v-if="file.name in results"
+          v-if="results !== undefined && file.name in results"
           class="tag is-success"
           :href="links[file.name]"
           :download="txtName(file.name)"
