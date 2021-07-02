@@ -27,7 +27,7 @@ export default {
     }
   },
   setup(props) {
-    const { file, hidden } = toRefs(props)
+    const { file, visible } = toRefs(props)
     const store = useStore(key)
     let pdfPages = ref([])
     let canvasRefs = []
@@ -91,7 +91,7 @@ export default {
     onMounted(renderPages)
     watch(file, renderPages)
 
-    return { hidden, pdfPages, setCanvasRef }
+    return { visible, pdfPages, setCanvasRef }
   },
 }
 </script>
