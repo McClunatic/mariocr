@@ -3,6 +3,7 @@
     <label class="file-label">
       <!-- TODO: limit accepted file input types -->
       <input
+        :key="inputKey"
         @change="updateFiles"
         class="file-input"
         type="file"
@@ -21,16 +22,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs } from 'vue'
 import { useStore } from 'vuex'
 import { key } from '../store'
 
 export default defineComponent({
-  setup() {
+  props: {
+    inputKey: Number
+  },
+  setup(props) {
+    const { inputKey } = toRefs(props)
     const store = useStore(key)
     const updateFiles = (event: Event) => store.dispatch('updateFiles', event)
 
-    return { updateFiles }
+    return { inputKey, updateFiles }
   }
 })
 </script>

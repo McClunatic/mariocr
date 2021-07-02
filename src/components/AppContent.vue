@@ -6,6 +6,7 @@
       :class="{ 'is-grouped': files.length }"
     >
       <file-upload-button
+        :inputKey="inputKey"
         class="mb-4 control is-dark"
         :class="{ 'is-centered': !files.length, 'is-boxed': !files.length }"
       />
@@ -35,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 import { useStore } from 'vuex'
 import { key } from '../store'
 import FileUploadButton from './FileUploadButton.vue'
@@ -49,6 +50,7 @@ export default defineComponent({
     DocumentCanvas
   },
   setup() {
+    const inputKey = ref(0)
     const store = useStore(key)
     const files = computed(() => store.state.files)
     const pdfFiles = computed(() => store.getters.pdfFiles)
@@ -60,9 +62,13 @@ export default defineComponent({
     })
 
     const recognizeFiles = () => store.dispatch('recognizeFiles')
-    const clearFiles = () => store.dispatch('clearFiles')
+    const clearFiles = () => {
+      // Force a change to the input key to reload the input component
+      inputKey.value += 1
+      store.dispatch('clearFiles')
+    }
 
-    return { files, pdfFiles, isActive, recognizeFiles, clearFiles }
+    return { inputKey, files, pdfFiles, isActive, recognizeFiles, clearFiles }
   }
 })
 </script>
