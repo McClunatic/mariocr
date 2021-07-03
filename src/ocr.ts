@@ -1,7 +1,17 @@
-import { createWorker, Worker } from 'tesseract.js'
+import { createWorker, Worker, RecognizeResult } from 'tesseract.js'
+
+interface PDFResult {
+  jobID: string
+  data: number[]
+}
 
 interface PDFWorker extends Worker {
-  getPDF(title?: string, textonly?: boolean, jobId?: string): Promise<any>
+  getPDF(title?: string, textonly?: boolean, jobId?: string): Promise<PDFResult>
+}
+
+interface OCRResult {
+  recognize: RecognizeResult
+  pdf?: PDFResult
 }
 
 export default class OCRPool {
@@ -44,9 +54,9 @@ export default class OCRPool {
     const index = this.idleWorkers.indexOf(worker)
     this.idleWorkers.splice(index, 1)
 
-    let result = await worker.recognize(image)
+    const result: OCRResult = { recognize: await worker.recognize(image) }
     if (this.format === 'pdf') {
-      result = await worker.getPDF('Tesseract OCR Result')
+      result['pdf'] = await worker.getPDF('Tesseract OCR Result')
     }
 
     this.idleWorkers.push(worker)

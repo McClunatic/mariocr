@@ -146,7 +146,7 @@ export const store = createStore<State>({
             commit('updateResults', {
               key: file.name,
               idx: 0,
-              result: result.data
+              result: result.recognize.data
             }))
           )
         )
@@ -161,7 +161,7 @@ export const store = createStore<State>({
             commit('updateResults', {
               key: name,
               idx: idx,
-              result: result.data
+              result: result.recognize.data
             }))
           )
         ))
