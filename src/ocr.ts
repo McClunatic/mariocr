@@ -9,12 +9,12 @@ interface PDFWorker extends Worker {
   getPDF(title?: string, textonly?: boolean, jobId?: string): Promise<PDFResult>
 }
 
-interface OCRResult {
+export interface OCRResult {
   recognize: RecognizeResult
   pdf?: PDFResult
 }
 
-export default class OCRPool {
+export class OCRPool {
   maxWorkers: Number = navigator.hardwareConcurrency
   format: 'text' | 'pdf' = 'text'
   logger: (m?: String) => void = () => {}

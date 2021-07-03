@@ -1,17 +1,12 @@
 // store.ts
 import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
-import OCRPool from './ocr'
+import { OCRResult, OCRPool } from './ocr'
 
 // define your typings for the store state
 export interface Word {
   baseline: {[key: string]: number | string},
   bbox: {[key: string]: number},
-}
-export interface Result {
-  confidence: number,
-  text: string,
-  words: Array<Word>
 }
 
 export interface Status {
@@ -23,7 +18,8 @@ export interface State {
   files: Array<File>
   statuses: {[key: string]: Status}
   promises: {[key: string]: Promise<Array<string>>}
-  results: {[key: string]: Array<Result>}
+  results: {[key: string]: Array<OCRResult>}
+  format: 'text' | 'pdf'
 }
 
 // define injection key
@@ -34,7 +30,8 @@ export const store = createStore<State>({
     files: [],
     statuses: {},
     promises: {},
-    results: {}
+    results: {},
+    format: 'text'
   },
   getters: {
     imgFiles(state) {
@@ -90,11 +87,15 @@ export const store = createStore<State>({
     updateFiles(state, event: Event) {
       state.files = Array.from((<HTMLInputElement>event.target).files || [])
     },
-    updateResults(state, payload: {key: string, idx: number, result: Result}) {
+    updateResults(
+      state,
+      payload: {key: string, idx: number, result: OCRResult, format: 'text' | 'pdf'}
+    ) {
       if (!(payload.key in state.results)) {
         state.results[payload.key] = []
       }
       state.results[payload.key][payload.idx] = payload.result
+      state.format = payload.format
     },
     clearResults(state) {
       state.results = {}
@@ -146,7 +147,8 @@ export const store = createStore<State>({
             commit('updateResults', {
               key: file.name,
               idx: 0,
-              result: result.recognize.data
+              result: result,
+              format: format
             }))
           )
         )
@@ -161,7 +163,8 @@ export const store = createStore<State>({
             commit('updateResults', {
               key: name,
               idx: idx,
-              result: result.recognize.data
+              result: result,
+              format: format
             }))
           )
         ))

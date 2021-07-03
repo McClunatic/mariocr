@@ -45,7 +45,8 @@ export default defineComponent({
       const obj: {[key: string]: string} = {}
       for (const file of files.value) {
         try {
-          const text = results.value[file.name].map(r => r.text).join('\n\n')
+          const text = results.value[file.name]
+            .map(r => r.recognize.data.text).join('\n\n')
           const blob = new Blob([text], { type: 'text/plain' })
           obj[file.name] = window.URL.createObjectURL(blob)
         } catch (error) {
