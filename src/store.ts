@@ -19,7 +19,6 @@ export interface State {
   statuses: {[key: string]: Status}
   promises: {[key: string]: Promise<Array<string>>}
   results: {[key: string]: Array<OCRResult>}
-  format: 'text' | 'pdf'
 }
 
 // define injection key
@@ -31,7 +30,6 @@ export const store = createStore<State>({
     statuses: {},
     promises: {},
     results: {},
-    format: 'text'
   },
   getters: {
     imgFiles(state) {
@@ -89,13 +87,12 @@ export const store = createStore<State>({
     },
     updateResults(
       state,
-      payload: {key: string, idx: number, result: OCRResult, format: 'text' | 'pdf'}
+      payload: {key: string, idx: number, result: OCRResult }
     ) {
       if (!(payload.key in state.results)) {
         state.results[payload.key] = []
       }
       state.results[payload.key][payload.idx] = payload.result
-      state.format = payload.format
     },
     clearResults(state) {
       state.results = {}
@@ -147,8 +144,7 @@ export const store = createStore<State>({
             commit('updateResults', {
               key: file.name,
               idx: 0,
-              result: result,
-              format: format
+              result: result
             }))
           )
         )
@@ -163,8 +159,7 @@ export const store = createStore<State>({
             commit('updateResults', {
               key: name,
               idx: idx,
-              result: result,
-              format: format
+              result: result
             }))
           )
         ))
