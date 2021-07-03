@@ -128,12 +128,12 @@ export const store = createStore<State>({
         commit('updateStatuses', { [file.name]: { pages: 1, rendered } })
       }
     },
-    async recognizeFiles({ state, getters, commit }) {
+    async recognizeFiles({ state, getters, commit }, format: 'text' | 'pdf') {
       // Clear prior results
       commit('clearResults')
 
       // Start OCR worker pool
-      const pool = new OCRPool()
+      const pool = new OCRPool(format)
 
       // Filter files into two lists: PDFs and non-PDFs
       const pdfs = state.files.filter(file => file.name.endsWith('.pdf'))

@@ -11,10 +11,10 @@ export default class OCRPool {
   workers: PDFWorker[] = []
   idleWorkers: PDFWorker[] = []
 
-  constructor(maxWorkers?: Number, format?: 'text' | 'pdf', logger?: (m?: String) => void) {
-    if (maxWorkers !== undefined) this.maxWorkers = maxWorkers
+  constructor(format?: 'text' | 'pdf', logger?: (m?: String) => void, maxWorkers?: Number) {
     if (format !== undefined) this.format = format
     if (logger !== undefined) this.logger = logger
+    if (maxWorkers !== undefined) this.maxWorkers = maxWorkers
   }
 
   async getWorker(): Promise<PDFWorker> {

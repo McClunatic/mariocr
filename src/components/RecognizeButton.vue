@@ -21,13 +21,13 @@
         <div class="dropdown-content">
           <a
             class="dropdown-item"
-            @click="recognizeFiles"
+            @click="recognizeFiles('text')"
           >
             Results as text
           </a>
           <a
             class="dropdown-item"
-            @click="recognizeFiles"
+            @click="recognizeFiles('pdf')"
           >
             Results as PDF
           </a>
@@ -48,7 +48,9 @@ export default defineComponent({
     const recognizeDropdown = ref(null)
     const store = useStore(key)
 
-    const recognizeFiles = () => store.dispatch('recognizeFiles')
+    const recognizeFiles = (format: 'text' | 'pdf') => (
+      store.dispatch('recognizeFiles', format)
+    )
 
     function closeDropdown(event: Event) {
       const dropdown = <HTMLDivElement><unknown>recognizeDropdown.value
