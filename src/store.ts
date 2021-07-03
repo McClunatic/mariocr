@@ -1,21 +1,7 @@
 // store.ts
 import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
-import { createWorker, createScheduler } from 'tesseract.js'
-
-// define scheduler helper function
-export async function initializeScheduler() {
-  const scheduler = createScheduler()
-  const numThreads = Math.min(2, navigator.hardwareConcurrency / 2)
-  for (let thread = 0; thread < numThreads; thread++) {
-    const worker = createWorker({logger: m => console.log(m)})
-    await worker.load()
-    await worker.loadLanguage('eng')
-    await worker.initialize('eng')
-    scheduler.addWorker(worker)
-  }
-  return scheduler
-}
+import OCRPool from './ocr'
 
 // define your typings for the store state
 export interface Word {
@@ -146,8 +132,8 @@ export const store = createStore<State>({
       // Clear prior results
       commit('clearResults')
 
-      // Start scheduler and workers
-      const scheduler = await initializeScheduler()
+      // Start OCR worker pool
+      const pool = new OCRPool()
 
       // Filter files into two lists: PDFs and non-PDFs
       const pdfs = state.files.filter(file => file.name.endsWith('.pdf'))
@@ -156,7 +142,7 @@ export const store = createStore<State>({
       // Dispatch OCR jobs for non-PDFs
       const imgJobs: Promise<void[]> = Promise.all(getters.imgFiles.map(
         (file: File) => (
-          scheduler.addJob('recognize', file).then((result): void => (
+          pool.recognize(file).then((result): void => (
             commit('updateResults', {
               key: file.name,
               idx: 0,
@@ -171,7 +157,7 @@ export const store = createStore<State>({
       for (const [name, prom] of Object.entries(state.promises)) {
 
         const pageJobs = (await prom).map((url, idx) => (
-          scheduler.addJob('recognize', url).then((result): void => (
+          pool.recognize(url).then((result): void => (
             commit('updateResults', {
               key: name,
               idx: idx,
@@ -189,7 +175,7 @@ export const store = createStore<State>({
       console.log(state.results)
 
       // Terminate scheduler
-      await scheduler.terminate()
+      await pool.terminate()
     }
   }
 })
