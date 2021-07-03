@@ -60,14 +60,13 @@ export default defineComponent({
       return true
     })
 
-    const recognizeFiles = () => store.dispatch('recognizeFiles')
     const clearFiles = () => {
       // Force a change to the input key to reload the input component
       inputKey.value += 1
       store.dispatch('clearFiles')
     }
 
-    return { inputKey, files, pdfFiles, isActive, recognizeFiles, clearFiles }
+    return { inputKey, files, pdfFiles, isActive, clearFiles }
   }
 })
 </script>
