@@ -44,9 +44,14 @@ export default defineComponent({
     const links = computed(() => {
       const obj: {[key: string]: string} = {}
       for (const file of files.value) {
-        const text = results.value[file.name].map(res => res.text).join('\n\n')
-        const blob = new Blob([text], { type: 'text/plain' })
-        obj[file.name] = window.URL.createObjectURL(blob)
+        try {
+          const text = results.value[file.name].map(r => r.text).join('\n\n')
+          const blob = new Blob([text], { type: 'text/plain' })
+          obj[file.name] = window.URL.createObjectURL(blob)
+        } catch (error) {
+          // Handle strange results.value === undefined error
+          obj[file.name] = ''
+        }
       }
       return obj
     })
