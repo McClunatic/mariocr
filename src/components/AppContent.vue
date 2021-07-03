@@ -10,13 +10,10 @@
         class="mb-4 control is-dark"
         :class="{ 'is-centered': !files.length, 'is-boxed': !files.length }"
       />
-      <button
-        class="button control is-primary"
+      <recognize-button
+        class="control"
         :class="{ 'is-hidden': !files.length }"
-        @click="recognizeFiles"
-      >
-        OCR
-      </button>
+      />
       <button
         class="button control is-outlined"
         :class="{ 'is-hidden': !files.length, 'is-active': isActive }"
@@ -40,12 +37,14 @@ import { computed, defineComponent, ref } from 'vue'
 import { useStore } from 'vuex'
 import { key } from '../store'
 import FileUploadButton from './FileUploadButton.vue'
+import RecognizeButton from './RecognizeButton.vue'
 import FilesList from './FilesList.vue'
 import DocumentCanvas from './DocumentCanvas.vue'
 
 export default defineComponent({
   components: {
     FileUploadButton,
+    RecognizeButton,
     FilesList,
     DocumentCanvas
   },
