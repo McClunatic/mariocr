@@ -2,7 +2,7 @@
   <div class="buttons has-addons is-align-items-flex-start">
     <div
       class="button control is-primary"
-      @click="recognizeFiles"
+      @click="recognizeFiles('text')"
     >
       OCR
     </div>
