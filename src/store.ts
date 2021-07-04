@@ -18,6 +18,7 @@ export interface Status {
 export interface State {
   files: Array<File>
   results: {[key: string]: Array<OCRResult>}
+  links: {[key: string]: string}
 }
 
 // define injection key
@@ -27,6 +28,7 @@ export const store = createStore<State>({
   state: {
     files: [],
     results: {},
+    links: {}
   },
   getters: {
     imgFiles(state) {
@@ -51,6 +53,7 @@ export const store = createStore<State>({
 
       // Clear other store data
       state.results = {}
+      state.links = {}
     },
     updateFiles(state, event: Event) {
       state.files = Array.from((<HTMLInputElement>event.target).files || [])
@@ -66,7 +69,21 @@ export const store = createStore<State>({
     },
     clearResults(state) {
       state.results = {}
-    }
+    },
+    updateLinks(state, payload: {key: string, format: 'text'  | 'pdf'}) {
+      if (payload.format === 'text') {
+        const text = state.results[payload.key].map(result => (
+          result.recognize.data.text
+        )).join('\n\n')
+        const blob = new Blob([text], { type: 'text/plain' })
+        state.links[payload.key] = window.URL.createObjectURL(blob)
+      } else {
+        // TODO: this will involve async stuff... can't be done here
+      }
+    },
+    clearLinks(state) {
+      state.links = {}
+    },
   },
   actions: {
     removeFile({ commit }, index: number) {
@@ -79,17 +96,19 @@ export const store = createStore<State>({
       commit('updateFiles', event)
     },
     async recognizeFiles({ state, getters, commit }, format: 'text' | 'pdf') {
-      // Clear prior results
+      // Clear prior results and links
       commit('clearResults')
+      commit('clearLinks')
 
       // Start OCR worker pool
-      const pool = new OCRPool(format)
+      const pool = new OCRPool(format, (m => console.log(m)))
 
       // Dispatch OCR jobs for non-PDFs
       const imgJobs: Promise<void[]> = Promise.all(getters.imgFiles.map(
         async (file: File) => {
           const result = await pool.recognize(file)
           commit('updateResults', { key: file.name, idx: 0, result: result })
+          commit('updateLinks', { key: file.name, format })
         }
       ))
 
@@ -101,7 +120,7 @@ export const store = createStore<State>({
           await Promise.all(urls.map(async (url, idx) => {
             const result = await pool.recognize(url)
             commit('updateResults', { key: file.name, idx, result })
-          }))
+          })).then(() => commit('updateLinks', { key: file.name, format }))
         }
       )
 

@@ -8,7 +8,7 @@
       <span class="column is-6">{{ file.name }}</span>
       <div class="column is-5">
         <a
-          v-if="results !== undefined && file.name in results"
+          v-if="links !== undefined && file.name in links"
           class="tag is-success"
           :href="links[file.name]"
           :download="txtName(file.name)"
@@ -33,22 +33,9 @@ export default defineComponent({
     const store = useStore(key)
     const files = computed(() => store.state.files)
     const results = computed(() => store.state.results)
+    const links = computed(() => store.state.links)
 
-    const links = computed(() => {
-      const obj: {[key: string]: string} = {}
-      for (const file of files.value) {
-        try {
-          const text = results.value[file.name]
-            .map(r => r.recognize.data.text).join('\n\n')
-          const blob = new Blob([text], { type: 'text/plain' })
-          obj[file.name] = window.URL.createObjectURL(blob)
-        } catch (error) {
-          // Handle strange results.value === undefined error
-          obj[file.name] = ''
-        }
-      }
-      return obj
-    })
+    console.log(links.value)
 
     const removeFile = (index: number) => {
       store.dispatch('removeFile', index)
