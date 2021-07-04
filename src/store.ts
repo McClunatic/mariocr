@@ -96,8 +96,8 @@ export const store = createStore<State>({
       // Dispatch OCR jobs for PDFs
       const pdfJobs: Array<Promise<void[]>> = getters.pdfFiles.map(
         async (file: File) => {
-          const document = await getDocument(file)
-          const urls = await getDataURLs(document)
+          const pdf = await getDocument(file)
+          const urls = await getDataURLs(pdf)
           await Promise.all(urls.map(async (url, idx) => {
             const result = await pool.recognize(url)
             commit('updateResults', { key: file.name, idx, result })
