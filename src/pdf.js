@@ -1,6 +1,5 @@
 import * as pdfjsLib from 'pdfjs-dist'
 import * as pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry'
-import { getTsBuildInfoEmitOutputFilePath } from 'typescript'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
