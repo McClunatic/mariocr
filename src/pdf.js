@@ -27,7 +27,8 @@ export async function getDataURLs(pdf) {
   const urls = []
   for (let index = 0; index < pdf.numPages; index++) {
     const page = pages[index]
-    const viewport = page.getViewport({ scale: 2.5 })
+    // default DPI = 72; scale of 4.0 yields 288 (near Tesseract-optimal)
+    const viewport = page.getViewport({ scale: 4.0 })
     const canvas = document.createElement('canvas')
     canvas.height = viewport.height
     canvas.width = viewport.width
@@ -39,9 +40,3 @@ export async function getDataURLs(pdf) {
   }
   return urls
 }
-
-// algorithm:
-// for pdffile in pdffiles:
-//   pdfdoc = await getDocument(pdffile)
-//   urls = await getDataURLs(pdfdoc)
-//   urls.map((urls, index) => pool.recognize(urls).then(commit(...)))
