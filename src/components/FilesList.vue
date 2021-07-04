@@ -15,12 +15,6 @@
         >
           Download
         </a>
-        <span
-          v-else
-          class="tag is-info"
-        >
-          {{ fileStatus(file.name) }}
-        </span>
       </div>
       <div class="column is-1 is-flex is-justify-content-flex-end">
         <button class="delete" @click="removeFile(index)" />
@@ -38,7 +32,6 @@ export default defineComponent({
   setup() {
     const store = useStore(key)
     const files = computed(() => store.state.files)
-    const statuses = computed(() => store.state.statuses)
     const results = computed(() => store.state.results)
 
     const links = computed(() => {
@@ -57,12 +50,6 @@ export default defineComponent({
       return obj
     })
 
-    const fileStatus = (filename: string): string => {
-      const status = statuses.value[filename]
-      if (status.rendered === status.pages) return 'Ready'
-      else return `Rendering (${100 * status.rendered / status.pages}%)`
-    }
-
     const removeFile = (index: number) => {
       store.dispatch('removeFile', index)
     }
@@ -71,7 +58,7 @@ export default defineComponent({
       name.substr(0, name.lastIndexOf('.')) + '.txt'
     )
 
-    return { files, results, links, fileStatus, removeFile, txtName }
+    return { files, results, links, removeFile, txtName }
   },
 })
 </script>
