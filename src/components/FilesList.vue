@@ -10,8 +10,8 @@
         <a
           v-if="links !== undefined && file.name in links"
           class="tag is-success"
-          :href="links[file.name]"
-          :download="txtName(file.name)"
+          :href="links[file.name].url"
+          :download="links[file.name].name"
         >
           Download
         </a>
@@ -35,17 +35,11 @@ export default defineComponent({
     const results = computed(() => store.state.results)
     const links = computed(() => store.state.links)
 
-    console.log(links.value)
-
     const removeFile = (index: number) => {
       store.dispatch('removeFile', index)
     }
 
-    const txtName = (name: string) => (
-      name.substr(0, name.lastIndexOf('.')) + '.txt'
-    )
-
-    return { files, results, links, removeFile, txtName }
+    return { files, results, links, removeFile }
   },
 })
 </script>

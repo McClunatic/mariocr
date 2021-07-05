@@ -3,6 +3,7 @@ import { InjectionKey } from 'vue'
 import { createStore, Store } from 'vuex'
 import { OCRResult, OCRPool } from './ocr'
 import { getDocument, getDataURLs } from './pdf'
+import { mergePdfs } from './mergepdf'
 
 // define your typings for the store state
 export interface Word {
@@ -15,10 +16,15 @@ export interface Status {
   pages: number
 }
 
+export interface Link {
+  url: string,
+  name: string
+}
+
 export interface State {
   files: Array<File>
   results: {[key: string]: Array<OCRResult>}
-  links: {[key: string]: string}
+  links: {[key: string]: Link}
 }
 
 // define injection key
@@ -70,15 +76,38 @@ export const store = createStore<State>({
     clearResults(state) {
       state.results = {}
     },
-    updateLinks(state, payload: {key: string, format: 'text'  | 'pdf'}) {
+    updateLinks(
+      state,
+      payload: {key: string, format: 'text'  | 'pdf', mergedPdf?: any}
+    ) {
+      let blob: Blob
       if (payload.format === 'text') {
         const text = state.results[payload.key].map(result => (
           result.recognize.data.text
         )).join('\n\n')
-        const blob = new Blob([text], { type: 'text/plain' })
-        state.links[payload.key] = window.URL.createObjectURL(blob)
+        blob = new Blob([text], { type: 'text/plain' })
+      // No merged PDF: img case, where PDF is a single page from result
+      } else if (payload.mergedPdf === undefined) {
+        const data = state.results[payload.key][0].pdf!.data
+        blob = new Blob(
+          [new Uint8Array(data)],
+          { type: 'application/pdf' }
+        )
+      // Merged PDF: PDF source case, merged result of one or more pages
       } else {
-        // TODO: this will involve async stuff... can't be done here
+        blob = new Blob(
+          [payload.mergedPdf!],
+          { type: 'application/pdf' }
+        )
+      }
+
+      const saveName = (n: string, e: string) => (
+        n.substr(0, n.lastIndexOf('.')) + e
+      )
+      const ext = payload.format === 'text' ? '.ocr.txt' : '.ocr.pdf'
+      state.links[payload.key] = {
+        url: window.URL.createObjectURL(blob),
+        name: saveName(payload.key, ext)
       }
     },
     clearLinks(state) {
@@ -119,8 +148,21 @@ export const store = createStore<State>({
           const urls = await getDataURLs(pdf)
           await Promise.all(urls.map(async (url, idx) => {
             const result = await pool.recognize(url)
-            commit('updateResults', { key: file.name, idx, result })
-          })).then(() => commit('updateLinks', { key: file.name, format }))
+            const payload = { key: file.name, idx, result }
+            commit('updateResults', payload)
+            return payload
+          })).then(payloads => {
+            const linkPayload = { key: payloads[0].key, format }
+            if (format === 'text') {
+              commit('updateLinks', linkPayload)
+            } else {
+              const pdfBytes = payloads.map(p => (
+                new Uint8Array(p.result.pdf!.data)
+              ))
+              const mergedPdf = mergePdfs(pdfBytes)
+              commit('updateLinks', { ...linkPayload, mergedPdf })
+            }
+          })
         }
       )
 
