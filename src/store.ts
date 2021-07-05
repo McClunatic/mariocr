@@ -146,23 +146,23 @@ export const store = createStore<State>({
         async (file: File) => {
           const pdf = await getDocument(file)
           const urls = await getDataURLs(pdf)
-          await Promise.all(urls.map(async (url, idx) => {
+          const payloads = await Promise.all(urls.map(async (url, idx) => {
             const result = await pool.recognize(url)
             const payload = { key: file.name, idx, result }
             commit('updateResults', payload)
             return payload
-          })).then(payloads => {
-            const linkPayload = { key: payloads[0].key, format }
-            if (format === 'text') {
-              commit('updateLinks', linkPayload)
-            } else {
-              const pdfBytes = payloads.map(p => (
-                new Uint8Array(p.result.pdf!.data)
-              ))
-              const mergedPdf = mergePdfs(pdfBytes)
-              commit('updateLinks', { ...linkPayload, mergedPdf })
-            }
-          })
+          }))
+
+          const linkPayload = { key: payloads[0].key, format }
+          if (format === 'text') {
+            commit('updateLinks', linkPayload)
+          } else {
+            const pdfBytes = payloads.map(p => (
+              new Uint8Array(p.result.pdf!.data)
+            ))
+            const mergedPdf = await mergePdfs(pdfBytes)
+            commit('updateLinks', { ...linkPayload, mergedPdf })
+          }
         }
       )
 
