@@ -130,12 +130,15 @@ export const store = createStore<State>({
       commit('clearLinks')
 
       // Start OCR worker pool
-      const pool = new OCRPool(format, (m => console.log(m)))
+      function logger(this: {file: string}, m: any) {
+        console.log({ ...m, file: this.file })
+      }
+      const pool = new OCRPool(format, logger)
 
       // Dispatch OCR jobs for non-PDFs
       const imgJobs: Promise<void[]> = Promise.all(getters.imgFiles.map(
         async (file: File) => {
-          const result = await pool.recognize(file)
+          const result = await pool.recognize(file, file.name)
           commit('updateResults', { key: file.name, idx: 0, result: result })
           commit('updateLinks', { key: file.name, format })
         }
@@ -147,7 +150,7 @@ export const store = createStore<State>({
           const pdf = await getDocument(file)
           const urls = await getDataURLs(pdf)
           const payloads = await Promise.all(urls.map(async (url, idx) => {
-            const result = await pool.recognize(url)
+            const result = await pool.recognize(url, file.name)
             const payload = { key: file.name, idx, result }
             commit('updateResults', payload)
             return payload

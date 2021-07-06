@@ -14,12 +14,17 @@ export interface OCRResult {
   pdf?: PDFResult
 }
 
+interface WorkerData {
+  worker: PDFWorker
+  binding: { file?: string | undefined }
+}
+
 export class OCRPool {
   maxWorkers: Number = navigator.hardwareConcurrency
   format: 'text' | 'pdf' = 'text'
   logger: (m?: String) => void = () => {}
-  workers: PDFWorker[] = []
-  idleWorkers: PDFWorker[] = []
+  workers: WorkerData[] = []
+  idleWorkers: WorkerData[] = []
 
   constructor(format?: 'text' | 'pdf', logger?: (m?: String) => void, maxWorkers?: Number) {
     if (format !== undefined) this.format = format
@@ -27,15 +32,22 @@ export class OCRPool {
     if (maxWorkers !== undefined) this.maxWorkers = maxWorkers
   }
 
-  async getWorker(): Promise<PDFWorker> {
+  async getWorker(file?: string): Promise<WorkerData> {
     let worker: PDFWorker | undefined = undefined
+    let binding: { file?: string | undefined } = { file: undefined }
 
     // Case 1: there are idle workers
-    if (this.idleWorkers.length > 0) worker = this.idleWorkers.shift()
+    if (this.idleWorkers.length > 0) {
+      const workerData = this.idleWorkers.shift();
+      ({ worker, binding } = workerData!)
+      binding.file = file
+    }
     // Case 2: there are still fewer than max workers
     else if (this.workers.length < this.maxWorkers) {
-      worker = <PDFWorker>createWorker({ logger: this.logger })
-      this.workers.push(worker)
+      binding.file = file
+      const logger = this.logger.bind(binding)
+      worker = <PDFWorker>createWorker({ logger })
+      this.workers.push({ worker, binding })
       await worker.load()
       await worker.loadLanguage('eng')
       await worker.initialize('eng')
@@ -43,15 +55,18 @@ export class OCRPool {
     } else {
       while (worker === undefined) {
         await new Promise(r => setTimeout(r, 100));
-        worker = this.idleWorkers.shift()
+        const workerData = this.idleWorkers.shift();
+        ({ worker, binding } = workerData!)
+        binding.file = file
       }
     }
-    return worker!
+    return { worker, binding }
   }
 
-  async recognize(image: any) {
-    const worker = await this.getWorker()
-    const index = this.idleWorkers.indexOf(worker)
+  async recognize(image: any, file?: string) {
+    const workerData = await this.getWorker(file)
+    const { worker } = workerData
+    const index = this.idleWorkers.indexOf(workerData)
     this.idleWorkers.splice(index, 1)
 
     const result: OCRResult = { recognize: await worker.recognize(image) }
@@ -59,11 +74,11 @@ export class OCRPool {
       result['pdf'] = await worker.getPDF('Tesseract OCR Result')
     }
 
-    this.idleWorkers.push(worker)
+    this.idleWorkers.push(workerData)
     return result
   }
 
   async terminate() {
-    await Promise.all(this.workers.map(worker => worker.terminate()))
+    await Promise.all(this.workers.map(({ worker }) => worker.terminate()))
   }
 }
