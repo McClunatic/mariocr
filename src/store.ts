@@ -12,8 +12,11 @@ export interface Word {
 }
 
 export interface Status {
-  rendered: number,
-  pages: number
+  workerId: string
+  jobId: string
+  status: string
+  progress: number
+  file: string
 }
 
 export interface Link {
@@ -23,6 +26,7 @@ export interface Link {
 
 export interface State {
   files: Array<File>
+  statuses: {[key: string]: Status}
   results: {[key: string]: Array<OCRResult>}
   links: {[key: string]: Link}
 }
@@ -33,6 +37,7 @@ export const key: InjectionKey<Store<State>> = Symbol()
 export const store = createStore<State>({
   state: {
     files: [],
+    statuses: {},
     results: {},
     links: {}
   },
@@ -58,11 +63,19 @@ export const store = createStore<State>({
       state.files = []
 
       // Clear other store data
+      state.statuses = {}
       state.results = {}
       state.links = {}
     },
     updateFiles(state, event: Event) {
       state.files = Array.from((<HTMLInputElement>event.target).files || [])
+    },
+    updateStatus(state, payload: Status) {
+      // TODO: address status reports for multiple pages of a single PDF
+      state.statuses[payload.file] = payload
+    },
+    clearStatuses(state) {
+      state.statuses = {}
     },
     updateResults(
       state,
@@ -125,13 +138,14 @@ export const store = createStore<State>({
       commit('updateFiles', event)
     },
     async recognizeFiles({ state, getters, commit }, format: 'text' | 'pdf') {
-      // Clear prior results and links
+      // Clear prior statuses, results, and links
+      commit('clearStatuses')
       commit('clearResults')
       commit('clearLinks')
 
       // Start OCR worker pool
-      function logger(this: {file: string}, m: any) {
-        console.log({ ...m, file: this.file })
+      function logger(this: {file: string}, payload: any) {
+        commit('updateStatus', { ...payload, file: this.file })
       }
       const pool = new OCRPool(format, logger)
 
