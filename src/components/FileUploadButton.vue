@@ -1,12 +1,12 @@
 <template>
   <div class="file">
     <label class="file-label">
-      <!-- TODO: limit accepted file input types -->
       <input
         :key="inputKey"
         @change="updateFiles"
         class="file-input"
         type="file"
+        accept=".png, .jpg, .tiff, .pdf"
         multiple
       >
       <span class="file-cta">
