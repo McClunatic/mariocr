@@ -1,12 +1,12 @@
 <template>
   <div class="columns is-align-items-center">
-    <span class="column is-one-third is-size-7">{{ status.status }}</span>
+    <span class="column is-one-third is-size-7">{{ status }}</span>
     <progress
       class="progress column is-two-thirds is-small p-0"
-      :value="status.progress"
+      :value="progress"
       max="1"
     >
-      {{ status.progress }}
+      {{ progress }}
     </progress>
   </div>
 </template>
@@ -23,17 +23,50 @@ export default defineComponent({
   setup(props) {
     const { file } = toRefs(props)
     const store = useStore(key)
-    const status = computed(() => store.state.statuses[file.value!])
+    const pages = computed(() => store.state.pages[file.value!])
+    const statuses = computed(() => store.state.statuses[file.value!])
 
-    return { status }
+    const progression = [
+      'loading tesseract core',
+      'initializing tesseract',
+      'initialized tesseract',
+      'loading language traineddata',
+      'loaded language traineddata',
+      'initializing api',
+      'initialized api',
+      'recognizing text'
+    ]
+
+    const status = computed(() => {
+      let currentStep = progression[0]
+      for (const step of progression) {
+        if (statuses.value.filter(s => s && s.status.startsWith(step)).length)
+          currentStep = step
+      }
+      return currentStep
+    })
+
+    const progress = computed(() => {
+      const recog = progression[progression.length - 1]
+      if (status.value !== recog) return undefined
+      else {
+        const totalProgress = statuses.value
+          .filter(s => s && s.status === recog)
+          .map(s => s.progress)
+          .reduce((a, p) => a + p, 0)
+        return totalProgress / pages.value
+      }
+    })
+
+    return { status, progress }
   },
 })
 </script>
 
 <style lang="scss" scoped>
-span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+// span {
+//   white-space: nowrap;
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+// }
 </style>

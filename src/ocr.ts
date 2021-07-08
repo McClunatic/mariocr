@@ -14,9 +14,13 @@ export interface OCRResult {
   pdf?: PDFResult
 }
 
+interface Binding {
+  file?: string | undefined
+  page?: number | undefined
+}
 interface WorkerData {
   worker: PDFWorker
-  binding: { file?: string | undefined }
+  binding: Binding
 }
 
 export class OCRPool {
@@ -32,19 +36,19 @@ export class OCRPool {
     if (maxWorkers !== undefined) this.maxWorkers = maxWorkers
   }
 
-  async getWorker(file?: string): Promise<WorkerData> {
+  async getWorker(file?: string, page?: number): Promise<WorkerData> {
     let worker: PDFWorker | undefined = undefined
-    let binding: { file?: string | undefined } = { file: undefined }
+    let binding: Binding = { file, page }
 
     // Case 1: there are idle workers
     if (this.idleWorkers.length > 0) {
       const workerData = this.idleWorkers.shift();
       ({ worker, binding } = workerData!)
       binding.file = file
+      binding.page = page
     }
     // Case 2: there are still fewer than max workers
     else if (this.workers.length < this.maxWorkers) {
-      binding.file = file
       const logger = this.logger.bind(binding)
       worker = <PDFWorker>createWorker({ logger })
       this.workers.push({ worker, binding })
@@ -58,13 +62,14 @@ export class OCRPool {
         const workerData = this.idleWorkers.shift();
         ({ worker, binding } = workerData!)
         binding.file = file
+        binding.page = page
       }
     }
     return { worker, binding }
   }
 
-  async recognize(image: any, file?: string) {
-    const workerData = await this.getWorker(file)
+  async recognize(image: any, file?: string, page?: number) {
+    const workerData = await this.getWorker(file, page)
     const { worker } = workerData
     const index = this.idleWorkers.indexOf(workerData)
     this.idleWorkers.splice(index, 1)

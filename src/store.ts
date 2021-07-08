@@ -17,6 +17,7 @@ export interface Status {
   status: string
   progress: number
   file: string
+  page: number
 }
 
 export interface Link {
@@ -26,7 +27,8 @@ export interface Link {
 
 export interface State {
   files: Array<File>
-  statuses: {[key: string]: Status}
+  pages: {[key: string]: number}
+  statuses: {[key: string]: Array<Status>}
   results: {[key: string]: Array<OCRResult>}
   links: {[key: string]: Link}
 }
@@ -37,6 +39,7 @@ export const key: InjectionKey<Store<State>> = Symbol()
 export const store = createStore<State>({
   state: {
     files: [],
+    pages: {},
     statuses: {},
     results: {},
     links: {}
@@ -63,6 +66,7 @@ export const store = createStore<State>({
       state.files = []
 
       // Clear other store data
+      state.pages = {}
       state.statuses = {}
       state.results = {}
       state.links = {}
@@ -70,9 +74,17 @@ export const store = createStore<State>({
     updateFiles(state, event: Event) {
       state.files = Array.from((<HTMLInputElement>event.target).files || [])
     },
+    updatePages(state, payload: { key: string, pages: number }) {
+      state.pages[payload.key] = payload.pages
+    },
+    clearPages(state) {
+      state.pages = {}
+    },
     updateStatus(state, payload: Status) {
-      // TODO: address status reports for multiple pages of a single PDF
-      state.statuses[payload.file] = payload
+      if (!(payload.file in state.statuses)) {
+        state.statuses[payload.file] = []
+      }
+      state.statuses[payload.file][payload.page] = payload
     },
     clearStatuses(state) {
       state.statuses = {}
@@ -138,21 +150,23 @@ export const store = createStore<State>({
       commit('updateFiles', event)
     },
     async recognizeFiles({ state, getters, commit }, format: 'text' | 'pdf') {
-      // Clear prior statuses, results, and links
+      // Clear prior pages, statuses, results, and links
+      commit('clearPages')
       commit('clearStatuses')
       commit('clearResults')
       commit('clearLinks')
 
       // Start OCR worker pool
-      function logger(this: {file: string}, payload: any) {
-        commit('updateStatus', { ...payload, file: this.file })
+      function logger(this: {file: string, page: number}, payload: any) {
+        commit('updateStatus', {...payload, file: this.file, page: this.page})
       }
       const pool = new OCRPool(format, logger)
 
       // Dispatch OCR jobs for non-PDFs
       const imgJobs: Promise<void[]> = Promise.all(getters.imgFiles.map(
         async (file: File) => {
-          const result = await pool.recognize(file, file.name)
+          commit('updatePages', { key: file.name, pages: 1 })
+          const result = await pool.recognize(file, file.name, 0)
           commit('updateResults', { key: file.name, idx: 0, result: result })
           commit('updateLinks', { key: file.name, format })
         }
@@ -162,9 +176,10 @@ export const store = createStore<State>({
       const pdfJobs: Array<Promise<void[]>> = getters.pdfFiles.map(
         async (file: File) => {
           const pdf = await getDocument(file)
+          commit('updatePages', { key: file.name, pages: pdf.numPages })
           const urls = await getDataURLs(pdf)
           const payloads = await Promise.all(urls.map(async (url, idx) => {
-            const result = await pool.recognize(url, file.name)
+            const result = await pool.recognize(url, file.name, idx)
             const payload = { key: file.name, idx, result }
             commit('updateResults', payload)
             return payload
