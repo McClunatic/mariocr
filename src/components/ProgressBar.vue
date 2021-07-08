@@ -64,9 +64,9 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-// span {
-//   white-space: nowrap;
-//   overflow: hidden;
-//   text-overflow: ellipsis;
-// }
+span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>
