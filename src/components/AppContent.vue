@@ -2,25 +2,26 @@
   <section class="section is-flex-grow-1">
     <files-list />
     <div
-      class="field is-flex is-justify-content-center"
+      class="field is-flex pt-3"
       :class="{ 'is-grouped': files.length }"
     >
       <file-upload-button
         :inputKey="inputKey"
-        class="mb-4 control is-dark"
+        class="mb-4 control is-dark is-flex-grow-0"
         :class="{ 'is-centered': !files.length, 'is-boxed': !files.length }"
       />
+      <div class="is-flex-grow-1" />
       <recognize-button
-        class="control"
+        class="control is-flex-grow-0"
         :class="{ 'is-hidden': !files.length }"
       />
       <button
-        class="button control is-outlined"
+        class="button control is-outlined is-flex-grow-0"
         :class="{ 'is-hidden': !files.length }"
         @click="clearFiles"
       >
-        <span class="icon">
-          <i class="fas fa-undo" />
+        <span class="icon has-text-grey">
+          <i class="fas fa-times" />
         </span>
       </button>
     </div>
