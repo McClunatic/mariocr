@@ -21,6 +21,7 @@
       <download-button
         class="control is-flex-grow-0"
         :class="{ 'is-hidden': isDownloadHidden }"
+        @click="downloadFiles"
       />
       <clear-button
         :class="{ 'is-hidden': !files.length }"
@@ -33,6 +34,8 @@
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
 import { useStore } from 'vuex'
+import JSZip from 'jszip'
+import { saveAs } from 'file-saver'
 import { key } from '../store'
 import ClearButton from './ClearButton.vue'
 import DownloadButton from './DownloadButton.vue'
@@ -70,7 +73,18 @@ export default defineComponent({
       store.dispatch('clearFiles')
     }
 
-    return { inputKey, files, isDownloadHidden, clearFiles }
+    const downloadFiles = async () => {
+      const zip = new JSZip()
+      for (const value of Object.values(links.value)) {
+        zip.file(value.name, value.blob)
+      }
+      const blob = await zip.generateAsync({ type: 'blob' })
+      const now = new Date()
+      const stamp = now.toISOString().split('.').shift()!.replaceAll(':', '.')
+      saveAs(blob, `MarioCR-${stamp}.zip`)
+    }
+
+    return { inputKey, files, isDownloadHidden, clearFiles, downloadFiles }
   }
 })
 </script>

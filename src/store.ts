@@ -21,8 +21,9 @@ export interface Status {
 }
 
 export interface Link {
-  url: string,
   name: string
+  blob: Blob
+  url: string
 }
 
 export interface State {
@@ -131,8 +132,9 @@ export const store = createStore<State>({
       )
       const ext = payload.format === 'text' ? '.ocr.txt' : '.ocr.pdf'
       state.links[payload.key] = {
-        url: window.URL.createObjectURL(blob),
-        name: saveName(payload.key, ext)
+        name: saveName(payload.key, ext),
+        blob: blob,
+        url: window.URL.createObjectURL(blob)
       }
     },
     clearLinks(state) {
@@ -201,9 +203,6 @@ export const store = createStore<State>({
       // Await the completion of all jobs
       await imgJobs
       await Promise.all(pdfJobs)
-
-      // TODO provide download options for results
-      console.log(state.results)
 
       // Terminate scheduler
       await pool.terminate()
