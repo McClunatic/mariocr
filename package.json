@@ -8,6 +8,8 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.3",
     "bulma": "^0.9.3",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.6.0",
     "pdf-lib": "^1.16.0",
     "pdfjs-dist": "^2.8.335",
     "tesseract.js": "^2.1.4",
