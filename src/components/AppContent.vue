@@ -3,20 +3,24 @@
     <files-list />
     <div
       class="field is-flex pt-3"
-      :class="{ 'is-grouped': files.length }"
+      :class="{ 'is-grouped': files.length, 'is-justify-content-center': !files.length }"
     >
       <file-upload-button
         :inputKey="inputKey"
         class="mb-4 control is-dark is-flex-grow-0"
         :class="{ 'is-centered': !files.length, 'is-boxed': !files.length }"
       />
-      <div class="is-flex-grow-1" />
+      <div
+        v-if="files.length"
+        class="is-flex-grow-1"
+      ></div>
       <recognize-button
         class="control is-flex-grow-0"
         :class="{ 'is-hidden': !files.length }"
       />
       <download-button
         class="control is-flex-grow-0"
+        :class="{ 'is-hidden': isDownloadHidden }"
       />
       <clear-button
         :class="{ 'is-hidden': !files.length }"
@@ -48,6 +52,17 @@ export default defineComponent({
     const inputKey = ref(0)
     const store = useStore(key)
     const files = computed(() => store.state.files)
+    const links = computed(() => store.state.links)
+
+    const isDownloadHidden = computed(() => {
+      if (files.value === undefined) return true
+      if (links.value === undefined) return true
+      if (!files.value.length) return true
+      const linksKeys = Object.keys(links.value)
+      if (!linksKeys.length) return true
+      if (linksKeys.length < files.value.length) return true
+      return false
+    })
 
     const clearFiles = () => {
       // Force a change to the input key to reload the input component
@@ -55,7 +70,7 @@ export default defineComponent({
       store.dispatch('clearFiles')
     }
 
-    return { inputKey, files, clearFiles }
+    return { inputKey, files, isDownloadHidden, clearFiles }
   }
 })
 </script>
