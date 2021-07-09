@@ -15,6 +15,9 @@
         class="control is-flex-grow-0"
         :class="{ 'is-hidden': !files.length }"
       />
+      <download-button
+        class="control is-flex-grow-0"
+      />
       <button
         class="button control is-outlined is-flex-grow-0"
         :class="{ 'is-hidden': !files.length }"
@@ -32,12 +35,14 @@
 import { computed, defineComponent, ref } from 'vue'
 import { useStore } from 'vuex'
 import { key } from '../store'
+import DownloadButton from './DownloadButton.vue'
 import FileUploadButton from './FileUploadButton.vue'
 import RecognizeButton from './RecognizeButton.vue'
 import FilesList from './FilesList.vue'
 
 export default defineComponent({
   components: {
+    DownloadButton,
     FileUploadButton,
     RecognizeButton,
     FilesList
