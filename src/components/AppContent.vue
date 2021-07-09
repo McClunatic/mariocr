@@ -1,5 +1,5 @@
 <template>
-  <section class="section is-large is-flex-grow-1 has-background-light">
+  <section class="section is-flex-grow-1">
     <files-list />
     <div
       class="field is-flex is-justify-content-center"

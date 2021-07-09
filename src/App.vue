@@ -1,9 +1,15 @@
 <template>
-  <div class="page-content">
-    <nav-bar />
-    <hero-banner />
-    <app-content />
-    <app-footer />
+  <div class="hero is-fullheight is-light">
+    <div class="hero-head">
+      <nav-bar />
+      <hero-banner />
+    </div>
+    <div class="hero-body">
+      <app-content />
+    </div>
+    <div class="hero-foot">
+      <app-footer />
+    </div>
   </div>
 </template>
 
@@ -28,14 +34,4 @@ export default defineComponent({
 <style lang="scss">
 @import 'bulma/bulma.sass';
 @import '@fortawesome/fontawesome-free/css/all.min.css';
-
-html, body, #app {
-  height: 100%;
-}
-
-#app > .page-content {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-}
 </style>
