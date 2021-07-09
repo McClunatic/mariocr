@@ -18,15 +18,10 @@
       <download-button
         class="control is-flex-grow-0"
       />
-      <button
-        class="button control is-outlined is-flex-grow-0"
+      <clear-button
         :class="{ 'is-hidden': !files.length }"
         @click="clearFiles"
-      >
-        <span class="icon has-text-grey">
-          <i class="fas fa-times" />
-        </span>
-      </button>
+      />
     </div>
   </section>
 </template>
@@ -35,6 +30,7 @@
 import { computed, defineComponent, ref } from 'vue'
 import { useStore } from 'vuex'
 import { key } from '../store'
+import ClearButton from './ClearButton.vue'
 import DownloadButton from './DownloadButton.vue'
 import FileUploadButton from './FileUploadButton.vue'
 import RecognizeButton from './RecognizeButton.vue'
@@ -42,6 +38,7 @@ import FilesList from './FilesList.vue'
 
 export default defineComponent({
   components: {
+    ClearButton,
     DownloadButton,
     FileUploadButton,
     RecognizeButton,
