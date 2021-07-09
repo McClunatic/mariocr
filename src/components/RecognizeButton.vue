@@ -1,14 +1,14 @@
 <template>
   <div class="buttons has-addons is-align-items-flex-start">
     <div
-      class="button control is-primary"
+      class="button control is-info"
       @click="recognizeFiles('text')"
     >
       OCR
     </div>
     <div
       ref="recognizeDropdown"
-      class="button dropdown is-primary"
+      class="button dropdown is-info"
       :class="{ 'is-active': isActive }"
       @click="isActive = !isActive"
     >
